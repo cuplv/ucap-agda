@@ -1,36 +1,37 @@
 module UCaps where
 
--- data Bool : Set where
---   true : Bool
---   false : Bool
+open import Data.Nat using (ℕ; _+_; _*_)
 
--- ¬_ : Bool -> Bool
--- ¬_ true = false
--- ¬ false = true
+open import Data.Nat.Properties using (+-comm; +-identityʳ;  +-identityˡ)
 
-data BL : Set where
-  true : BL
-  false : BL
-  not : BL -> BL
+open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 
-interp : BL -> BL
-interp (not b) = b
-interp true = true
-interp false = false
+ex₁ : 3 + 5 ≡ 8
+ex₁ = refl
 
-data _≡_ {A : Set}(x : A) : A -> Set where
-  refl : x ≡ x
+data Counter : Set where
+  counter : ℕ -> ℕ -> Counter
 
-data _≠_ : BL -> BL -> Set where
-  t≠f : true ≠ false
-  f≠t : false ≠ true
+_⊗_ : Counter -> Counter -> Counter
+counter a1 s1 ⊗ counter a2 s2 = counter (a1 + a2) (s1 + s2)
 
-data Equal? (n m : BL) : Set where
-  eq : n ≡ m -> Equal? n m
-  neq : n ≠ m -> Equal? n m
+id : Counter
+id = counter 0 0
 
-equal? : (n m : BL) -> Equal? n m
-equal? true true = eq refl
-equal? false false = eq refl
-equal? true false = neq t≠f
-equal? false true = neq f≠t
+open Relation.Binary.PropositionalEquality using (cong; cong₂; module ≡-Reasoning)
+
+⊗-idr : ∀ x -> x ⊗ id ≡ x
+⊗-idr (counter a s) = begin
+  counter (a + 0) (s + 0) ≡⟨ cong₂ counter
+                                   (+-identityʳ a)
+                                   (+-identityʳ s) ⟩
+  counter a s ∎
+  where open ≡-Reasoning
+
+⊗-idl : ∀ x -> id ⊗ x ≡ x
+⊗-idl (counter a s) = begin
+  counter (0 + a) (0 + s) ≡⟨ cong₂ counter
+                                   (+-identityˡ a)
+                                   (+-identityˡ s) ⟩
+  counter a s ∎
+  where open ≡-Reasoning
